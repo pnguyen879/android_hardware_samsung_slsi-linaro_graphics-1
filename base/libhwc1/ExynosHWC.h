@@ -142,6 +142,9 @@
  */
 const size_t NUM_HW_WINDOWS = NUM_AVAILABLE_HW_WINDOWS;
 #else
+#ifdef USES_VPP
+const size_t NUM_HW_WINDOWS = MAX_DECON_WIN;
+#else
 const size_t NUM_HW_WINDOWS = S3C_FB_MAX_WIN;
 #endif
 
