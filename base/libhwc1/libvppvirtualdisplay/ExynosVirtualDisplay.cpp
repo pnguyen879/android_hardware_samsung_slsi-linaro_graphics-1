@@ -547,6 +547,7 @@ void ExynosVirtualDisplay::determineYuvOverlay(hwc_display_contents_1_t *content
         return;
     }
 
+#ifdef HWC_SCREENSHOT_ANIMATOR_LAYER
     /* find rotation animation layer */
     for (size_t i = 0; i < contents->numHwLayers; i++) {
         hwc_layer_1_t &layer = contents->hwLayers[i];
@@ -557,6 +558,7 @@ void ExynosVirtualDisplay::determineYuvOverlay(hwc_display_contents_1_t *content
             return;
         }
     }
+#endif
 
     private_handle_t *outBufHandle = private_handle_t::dynamicCast(contents->outbuf);
     if (outBufHandle == NULL) {
