@@ -57,14 +57,12 @@ void ExynosDisplay::dumpConfig(decon_win_config &c)
         DISPLAY_LOGD(eDebugWinConfig, "\t\tfd = %d, dma = %u "
                 "src_f_w = %u, src_f_h = %u, src_x = %d, src_y = %d, src_w = %u, src_h = %u, "
                 "dst_f_w = %u, dst_f_h = %u, dst_x = %d, dst_y = %d, dst_w = %u, dst_h = %u, "
-                "format = %u, blending = %u, protection = %u, transparent(x:%d, y:%d, w:%d, h:%d), "
-                "block(x:%d, y:%d, w:%d, h:%d)",
+                "format = %u, blending = %u, protection = %u, transparent(x:%d, y:%d, w:%d, h:%d)",
                 c.fd_idma[0], c.idma_type,
                 c.src.f_w, c.src.f_h, c.src.x, c.src.y, c.src.w, c.src.h,
                 c.dst.f_w, c.dst.f_h, c.dst.x, c.dst.y, c.dst.w, c.dst.h,
                 c.format, c.blending, c.protection,
-                c.transparent_area.x, c.transparent_area.y, c.transparent_area.w, c.transparent_area.h,
-                c.covered_opaque_area.x, c.covered_opaque_area.y, c.covered_opaque_area.w, c.covered_opaque_area.h);
+                c.transparent_area.x, c.transparent_area.y, c.transparent_area.w, c.transparent_area.h);
     }
 }
 
@@ -143,14 +141,12 @@ void ExynosDisplay::printDebugInfos(hwc_display_contents_1_t *contents)
                 ALOGD("fd = %d, fd1 = %d, fd2 = %d, dma = %u "
                         "src_f_w = %u, src_f_h = %u, src_x = %d, src_y = %d, src_w = %u, src_h = %u, "
                         "dst_f_w = %u, dst_f_h = %u, dst_x = %d, dst_y = %d, dst_w = %u, dst_h = %u, "
-                        "format = %u, blending = %u, protection = %u, transparent(x:%d, y:%d, w:%d, h:%d), "
-                        "block(x:%d, y:%d, w:%d, h:%d)",
+                        "format = %u, blending = %u, protection = %u, transparent(x:%d, y:%d, w:%d, h:%d)",
                         c[i].fd_idma[0], c[i].fd_idma[1], c[i].fd_idma[2], c[i].idma_type,
                         c[i].src.f_w, c[i].src.f_h, c[i].src.x, c[i].src.y, c[i].src.w, c[i].src.h,
                         c[i].dst.f_w, c[i].dst.f_h, c[i].dst.x, c[i].dst.y, c[i].dst.w, c[i].dst.h,
                         c[i].format, c[i].blending, c[i].protection,
-                        c[i].transparent_area.x, c[i].transparent_area.y, c[i].transparent_area.w, c[i].transparent_area.h,
-                        c[i].covered_opaque_area.x, c[i].covered_opaque_area.y, c[i].covered_opaque_area.w, c[i].covered_opaque_area.h);
+                        c[i].transparent_area.x, c.transparent_area.y, c.transparent_area.w, c.transparent_area.h);
             }
         }
     }
@@ -171,8 +167,7 @@ void ExynosDisplay::dumpConfig(decon_win_config &c, android::String8& result)
                 c.src.f_w, c.src.f_h, c.src.x, c.src.y, c.src.w, c.src.h,
                 c.dst.f_w, c.dst.f_h, c.dst.x, c.dst.y, c.dst.w, c.dst.h,
                 c.format, c.blending, c.protection,
-                c.transparent_area.x, c.transparent_area.y, c.transparent_area.w, c.transparent_area.h,
-                c.covered_opaque_area.x, c.covered_opaque_area.y, c.covered_opaque_area.w, c.covered_opaque_area.h);
+                c.transparent_area.x, c.transparent_area.y, c.transparent_area.w, c.transparent_area.h);
     }
 }
 
@@ -1317,12 +1312,13 @@ void ExynosDisplay::configureHandle(private_handle_t *handle, size_t index,
 
     if ((!isDimLayer) && handle == NULL)
         return;
-
+#ifdef HWC_SET_OPAQUE
     if ((layer.flags & HWC_SET_OPAQUE) && handle && (handle->format == HAL_PIXEL_FORMAT_RGBA_8888)
             && (layer.compositionType == HWC_OVERLAY)) {
         handle->format = HAL_PIXEL_FORMAT_RGBX_8888;
         isOpaque = 1;
     }
+#endif
     hwc_frect_t &sourceCrop = layer.sourceCropf;
     hwc_rect_t &displayFrame = layer.compositionType == HWC_FRAMEBUFFER_TARGET ? mFbUpdateRegion : layer.displayFrame;
     int32_t blending = layer.blending;
@@ -1906,7 +1902,9 @@ int ExynosDisplay::handleWindowUpdate(hwc_display_contents_1_t __unused *content
         (config[winUpdateInfoIdx].dst.w != (uint32_t)mXres) || (config[winUpdateInfoIdx].dst.h != (uint32_t)mXres)) {
         for (size_t i = 0; i < NUM_HW_WINDOWS; i++) {
             memset(&config[i].transparent_area, 0, sizeof(config[i].transparent_area));
+#ifdef HWC_SET_OPAQUE
             memset(&config[i].covered_opaque_area, 0, sizeof(config[i].covered_opaque_area));
+#endif
         }
     }
 
@@ -1919,6 +1917,7 @@ void ExynosDisplay::getLayerRegion(hwc_layer_1_t &layer, decon_win_rect &rect_ar
     hwc_rect_t const *hwcRects = NULL;
     unsigned int numRects = 0;
     switch (regionType) {
+#if 0
     case eTransparentRegion:
         hwcRects = layer.transparentRegion.rects;
         numRects = layer.transparentRegion.numRects;
@@ -1927,6 +1926,7 @@ void ExynosDisplay::getLayerRegion(hwc_layer_1_t &layer, decon_win_rect &rect_ar
         hwcRects = layer.coveredOpaqueRegion.rects;
         numRects = layer.coveredOpaqueRegion.numRects;
         break;
+#endif
     default:
         ALOGE("%s:: Invalid regionType (%d)", __func__, regionType);
         return;
