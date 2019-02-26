@@ -2716,7 +2716,7 @@ void ExynosDisplay::determineBandwidthSupport(hwc_display_contents_1_t *contents
                     supportedInternalMPP->mState = MPP_STATE_ASSIGNED;
                     mLayerInfos[fbIndex]->mInternalMPP = supportedInternalMPP;
                     mLayerInfos[fbIndex]->mDmaType = getDeconDMAType(mLayerInfos[fbIndex]->mInternalMPP);
-                    if (mLayerInfos[fbIndex]->mDmaType >= MAX_DECON_DMA_TYPE) {
+                    if (mLayerInfos[fbIndex]->mDmaType >= IDMA_G0_S) {
                         ALOGE("getDeconDMAType with InternalMPP for FramebufferTarget failed (MPP type: %d, MPP index: %d)",
                                 mLayerInfos[fbIndex]->mInternalMPP->mType, mLayerInfos[fbIndex]->mInternalMPP->mIndex);
                         mLayerInfos[fbIndex]->mDmaType = 0;
