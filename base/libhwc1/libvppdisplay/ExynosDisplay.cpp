@@ -1618,7 +1618,7 @@ int ExynosDisplay::handleWindowUpdate(hwc_display_contents_1_t __unused *content
     int hAlign = 0;
 
     char value[PROPERTY_VALUE_MAX];
-    property_get("debug.hwc.winupdate", value, NULL);
+    property_get("ro.vendor.winupdate", value, NULL);
 
     if (!(!strcmp(value, "1") || !strcmp(value, "true")))
         return -eWindowUpdateDisabled;
