@@ -53,9 +53,9 @@ ifeq ($(BOARD_DISABLE_HWC_DEBUG), true)
 	COMMON_CFLAGS += -DDISABLE_HWC_DEBUG
 endif
 
-ifeq ($(BOARD_USES_VENDORIMAGE), true)
+#ifeq ($(BOARD_USES_VENDORIMAGE), true)
 COMMON_PROPRIETARY_MODULE := true
-endif
+#endif
 
 ############################## libhwcService ##############################
 

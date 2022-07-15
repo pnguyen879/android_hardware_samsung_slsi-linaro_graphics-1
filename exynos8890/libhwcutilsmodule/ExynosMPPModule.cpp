@@ -27,7 +27,7 @@ ExynosMPPModule::ExynosMPPModule(ExynosDisplay *display, unsigned int mppType, u
 
 int ExynosMPPModule::getBufferUsage(private_handle_t *srcHandle)
 {
-    unsigned long usage = GRALLOC_USAGE_SW_READ_NEVER |
+    unsigned long long usage = GRALLOC_USAGE_SW_READ_NEVER |
                           GRALLOC_USAGE_SW_WRITE_NEVER |
                           GRALLOC_USAGE_NOZEROED |
                           GRALLOC_USAGE_HW_COMPOSER;
