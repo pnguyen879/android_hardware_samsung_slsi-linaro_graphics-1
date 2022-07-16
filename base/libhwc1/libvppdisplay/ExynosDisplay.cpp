@@ -1623,13 +1623,13 @@ int ExynosDisplay::handleWindowUpdate(hwc_display_contents_1_t __unused *content
     int wAlign = 0;
     int yAlign = 0;
     int hAlign = 0;
-#if 0
+
     char value[PROPERTY_VALUE_MAX];
     property_get("ro.vendor.winupdate", value, "1");
 
     if (!(!strcmp(value, "1") || !strcmp(value, "true")))
         return -eWindowUpdateDisabled;
-#endif
+
     if (DECON_WIN_UPDATE_IDX < 0)
         return -eWindowUpdateInvalidIndex;
     winUpdateInfoIdx = DECON_WIN_UPDATE_IDX;

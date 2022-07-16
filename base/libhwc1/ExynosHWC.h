@@ -147,6 +147,7 @@ const size_t NUM_HW_WINDOWS = MAX_DECON_WIN;
 #else
 const size_t NUM_HW_WINDOWS = S3C_FB_MAX_WIN;
 #endif
+#endif
 
 #ifndef HWC_VERSION
 #define HWC_VERSION HWC_DEVICE_API_VERSION_1_3
