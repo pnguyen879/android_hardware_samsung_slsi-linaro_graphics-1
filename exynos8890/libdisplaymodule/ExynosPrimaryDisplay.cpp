@@ -64,13 +64,5 @@ void ExynosPrimaryDisplay::determineYuvOverlay(hwc_display_contents_1_t *content
 
 bool ExynosPrimaryDisplay::isOverlaySupported(hwc_layer_1_t &layer, size_t index, bool useVPPOverlay, ExynosMPPModule** supportedInternalMPP, ExynosMPPModule** supportedExternalMPP)
 {
-#ifdef USES_EVT0
-    private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
-    if (hasPlaneAlpha(layer) && hasAlpha(handle->format) && (layer.blending == HWC_BLENDING_PREMULT)) {
-        DISPLAY_LOGD(eDebugOverlaySupported, "\tlayer %u: planeAlpha + preMultiplied blending is not supported", index);
-        mLayerInfos[index]->mCheckOverlayFlag |= eUnsupportedBlending;
-        return false;
-    }
-#endif
     return ExynosDisplay::isOverlaySupported(layer, index, useVPPOverlay, supportedInternalMPP, supportedExternalMPP);
 }

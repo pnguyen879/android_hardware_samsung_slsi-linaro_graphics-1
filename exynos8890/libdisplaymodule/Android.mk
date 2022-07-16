@@ -15,7 +15,3 @@
 LOCAL_SRC_FILES += \
 	../../$(TARGET_SOC)/libdisplaymodule/ExynosPrimaryDisplay.cpp \
 	../../$(TARGET_SOC)/libdisplaymodule/ExynosDisplayResourceManagerModule.cpp
-
-ifeq ($(BOARD_USES_EVT0),true)
-	LOCAL_CFLAGS += -DUSES_EVT0
-endif
