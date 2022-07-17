@@ -29,10 +29,7 @@ LOCAL_SRC_FILES := hwjpeg-base.cpp hwjpeg-v4l2.cpp ExynosJpegEncoder.cpp \
 
 LOCAL_MODULE := libhwjpeg
 LOCAL_MODULE_TAGS := optional
-
-ifeq ($(BOARD_USES_VENDORIMAGE), true)
-    LOCAL_PROPRIETARY_MODULE := true
-endif
+LOCAL_PROPRIETARY_MODULE := true
 
 include $(TOP)/hardware/samsung_slsi-linaro/graphics/base/BoardConfigCFlags.mk
 include $(BUILD_SHARED_LIBRARY)

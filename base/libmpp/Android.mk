@@ -31,10 +31,7 @@ LOCAL_MODULE := libmpp
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
 LOCAL_EXPORT_SHARED_LIBRARY_HEADERS += libexynosgscaler
 LOCAL_SHARED_LIBRARIES += libexynosgscaler
-
-ifeq ($(BOARD_USES_VENDORIMAGE), true)
 LOCAL_PROPRIETARY_MODULE := true
-endif
 
 include $(TOP)/hardware/samsung_slsi-linaro/exynos/BoardConfigCFlags.mk
 include $(BUILD_SHARED_LIBRARY)
