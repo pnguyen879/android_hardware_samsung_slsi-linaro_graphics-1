@@ -38,9 +38,6 @@ endif
 
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libexynosscaler
-
-ifeq ($(BOARD_USES_VENDORIMAGE), true)
-    LOCAL_PROPRIETARY_MODULE := true
-endif
+LOCAL_PROPRIETARY_MODULE := true
 
 include $(BUILD_SHARED_LIBRARY)

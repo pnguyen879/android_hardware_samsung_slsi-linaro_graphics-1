@@ -32,10 +32,7 @@ LOCAL_SRC_FILES := giant_mscl.cpp giant_mscl_impl.cpp buffer.cpp debug.cpp
 
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libgiantmscl
-
-ifeq ($(BOARD_USES_VENDORIMAGE), true)
 LOCAL_PROPRIETARY_MODULE := true
-endif
 
 include $(BUILD_SHARED_LIBRARY)
 
