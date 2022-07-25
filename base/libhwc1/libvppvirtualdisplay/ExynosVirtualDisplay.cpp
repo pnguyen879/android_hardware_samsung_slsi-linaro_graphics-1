@@ -355,7 +355,10 @@ int ExynosVirtualDisplay::set(hwc_display_contents_1_t* contents)
     mNumFB = 0;
     int IsNormalDRMWithSkipLayer = false;
     int err = 0;
-    private_handle_t *outBufHandle = private_handle_t::dynamicCast(contents->outbuf);
+
+    private_handle_t *outBufHandle = NULL;
+    if (contents->outbuf)
+        outBufHandle = private_handle_t::dynamicCast(contents->outbuf);
 
     /* Find normal drm layer with HWC_SKIP_LAYER */
     /* HDCP disabled and normal DRM playback */
