@@ -1845,6 +1845,7 @@ void ExynosMPP::setAllocDevice(alloc_device_t* allocDevice)
     if (mBufferFreeThread == NULL) {
         mBufferFreeThread = new BufferFreeThread(this);
         mBufferFreeThread->mRunning = true;
+        mBufferFreeThread->forceIncStrong(this);
         mBufferFreeThread->run("MPPThread");
     }
 }
