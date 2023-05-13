@@ -13,12 +13,14 @@ ExynosOverlayDisplay::ExynosOverlayDisplay(int __unused numMPPs, struct exynos5_
     :   ExynosDisplay(EXYNOS_PRIMARY_DISPLAY, pdev)
 {
     this->mHwc = pdev;
+	mInternalDMAs.add(IDMA_G0);
     mInternalDMAs.add(IDMA_G1);
 }
 
 void ExynosOverlayDisplay::doPreProcessing(hwc_display_contents_1_t* contents)
 {
     mInternalDMAs.clear();
+	mInternalDMAs.add(IDMA_G0);
     mInternalDMAs.add(IDMA_G1);
     ExynosDisplay::doPreProcessing(contents);
 }
