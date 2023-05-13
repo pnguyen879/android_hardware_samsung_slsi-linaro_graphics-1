@@ -197,10 +197,14 @@ enum decon_pixel_format halFormatToS3CFormat(int format)
     case HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SP_M_PRIV:
     case HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SP_M_S10B:
         return DECON_PIXEL_FORMAT_NV12M;
+#ifdef DECON_PIXEL_FORMAT_NV12N_10B
     case HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SPN_S10B:
         return DECON_PIXEL_FORMAT_NV12N_10B;
+#endif
+#ifdef DECON_PIXEL_FORMAT_NV12N
     case HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SPN:
         return DECON_PIXEL_FORMAT_NV12N;
+#endif
     default:
         return DECON_PIXEL_FORMAT_MAX;
     }
@@ -232,10 +236,14 @@ int S3CFormatToHalFormat(enum decon_pixel_format format)
     /* HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SP_M_PRIV, HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SP_M_S10B */
     case DECON_PIXEL_FORMAT_NV12M:
         return HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SP_M;
+#ifdef DECON_PIXEL_FORMAT_NV12N
     case DECON_PIXEL_FORMAT_NV12N:
         return HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SPN;
+#endif
+#ifdef DECON_PIXEL_FORMAT_NV12N_10B
     case DECON_PIXEL_FORMAT_NV12N_10B:
         return HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SPN_S10B;
+#endif
     default:
         return -1;
     }
