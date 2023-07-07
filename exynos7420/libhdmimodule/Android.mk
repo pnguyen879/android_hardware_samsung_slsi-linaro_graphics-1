@@ -12,5 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+ifeq ($(BOARD_HDMI_INCAPABLE), true)
+LOCAL_C_INCLUDES += $(TOP)/hardware/samsung_slsi/exynos/libhdmi_dummy
+else
+LOCAL_C_INCLUDES += $(TOP)/hardware/samsung_slsi/exynos/libvpphdmi
+endif
+
 LOCAL_SRC_FILES += \
 	./../../$(TARGET_SOC)/libhdmimodule/ExynosExternalDisplayModule.cpp

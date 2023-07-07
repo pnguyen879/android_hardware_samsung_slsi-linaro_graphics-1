@@ -19,8 +19,8 @@
 ExynosVirtualDisplayModule::ExynosVirtualDisplayModule(struct exynos5_hwc_composer_device_1_t *pdev)
     : ExynosVirtualDisplay(pdev)
 {
-    mInternalDMAs.add(IDMA_G3); // pretty sure this is fine
-    mGLESFormat = HAL_PIXEL_FORMAT_BGRA_8888; // pretty sure this is fine
+    mInternalDMAs.add(DECON_ODMA_WB); // pretty sure this is fine
+    mGLESFormat = HAL_PIXEL_FORMAT_BGRA_8888; // 99% sure
 }
 
 ExynosVirtualDisplayModule::~ExynosVirtualDisplayModule()
@@ -29,35 +29,34 @@ ExynosVirtualDisplayModule::~ExynosVirtualDisplayModule()
 
 void ExynosVirtualDisplayModule::determineBandwidthSupport(hwc_display_contents_1_t *contents)
 {
-	int tempvar = mAllowedOverlays;
-	// 99% sure this is fine
-	if (4 > tempvar){
-		tempvar = 5;
-	}
-	mAllowedOverlays = tempvar;
+	mAllowedOverlays = min(mAllowedOverlays, DECON_2_MAX_OVERLAY_COUNT);
     ExynosVirtualDisplay::determineBandwidthSupport(contents);
 }
 
-// TODO
+// I think this needs work
 void ExynosVirtualDisplayModule::configureWriteBack(hwc_display_contents_1_t *contents,
         decon_win_config_data &win_data)
 {
-	// 99% sure
 	private_handle_t *outBufHandle = private_handle_t::dynamicCast(contents->outbuf);
-	int temp = mDisplayFd; // 99% sure correct
-	if(temp > 5){ // TODO
-		temp = outBufHandle->fd; //->fd pointer 99% sure correct
-	}
 	win_data.fd_odma = outBufHandle->fd; // this is fine
 	return;
 }
 
+#ifdef USES_VDS_OTHERFORMAT
 bool ExynosVirtualDisplayModule::isSupportGLESformat()
 {
-    return mGLESFormat == HAL_PIXEL_FORMAT_BGRA_8888;
+    switch (mGLESFormat) {
+        case HAL_PIXEL_FORMAT_RGBA_8888:
+        case HAL_PIXEL_FORMAT_BGRA_8888:
+        case HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SP_M:
+        case HAL_PIXEL_FORMAT_EXYNOS_YCrCb_420_SP_M:
+            return true;
+        default:
+            return false;
+    }
 }
+#endif
 
-// pretty sure this is fine
 int32_t ExynosVirtualDisplayModule::getDisplayAttributes(const uint32_t attribute)
 {
     switch(attribute) {
