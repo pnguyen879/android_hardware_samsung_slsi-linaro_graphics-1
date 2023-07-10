@@ -147,7 +147,7 @@ struct exynos_mpp_t {
 //    - VPP_G1      --  Same as VPP_G0
 //    - VPP_G2      --  Leads to DECON DMA Register crashes/freezes
 //
-const exynos_mpp_t AVAILABLE_INTERNAL_MPP_UNITS[] = {{MPP_VPP_G, 0}, {MPP_VPP_G, 1}, {MPP_VG, 0}, {MPP_VG, 1}, {MPP_VGR, 0}, {MPP_VGR, 1}};
+const exynos_mpp_t AVAILABLE_INTERNAL_MPP_UNITS[] = {{MPP_VPP_G, 1}, {MPP_VG, 0}, {MPP_VG, 1}, {MPP_VGR, 0}, {MPP_VGR, 1}};
 
 //
 // removes support for blending from VG-channels
