@@ -292,7 +292,6 @@ ExynosDisplay::ExynosDisplay(uint32_t index, ExynosDevice *device)
     mYdpi(25400),
     mVsyncPeriod(16666666),
     mVsyncFd(-1),
-    mResChanged(false),
     mDSCHSliceNum(1),
     mDSCYSliceSize(mYres),
     mDevice(device),
@@ -2038,11 +2037,6 @@ int ExynosDisplay::deliverWinConfigData() {
     String8 errString;
     int ret = NO_ERROR;
 
-    if (mResChanged && !isFullScreenComposition()) {
-        ALOGD("deliverWinConfigData: drop invalid frame during resolution switch");
-        return ret;
-    }
-
     ret = validateWinConfigData();
     if (ret != NO_ERROR) {
         errString.appendFormat("Invalid WIN_CONFIG\n");
@@ -2688,32 +2682,6 @@ int32_t ExynosDisplay::canSkipValidate() {
     return NO_ERROR;
 }
 
-bool ExynosDisplay::isFullScreenComposition() {
-    hwc_rect_t dispRect = { INT_MAX, INT_MAX, 0, 0 };
-    for (auto layer : mLayers) {
-        auto &r = layer->mDisplayFrame;
-
-        if (r.top < dispRect.top)
-            dispRect.top = r.top;
-        if (r.left < dispRect.left)
-            dispRect.left = r.left;
-        if (r.bottom > dispRect.bottom)
-            dispRect.bottom = r.bottom;
-        if (r.right > dispRect.right)
-            dispRect.right = r.right;
-    }
-
-    if ((dispRect.top != 0) || (dispRect.left != 0) ||
-            (dispRect.right != mXres) || (dispRect.bottom != mYres)) {
-        ALOGD("invalid displayFrame disp=[%d %d %d %d] expected=%dx%d",
-                dispRect.left, dispRect.top, dispRect.right, dispRect.bottom,
-                mXres, mYres);
-        return false;
-    }
-
-    return true;
-}
-
 int32_t ExynosDisplay::handleSkipPresent(int32_t* outRetireFence)
 {
     int ret = 0;
@@ -2803,13 +2771,6 @@ int32_t ExynosDisplay::presentDisplay(int32_t* outRetireFence) {
     }
 
     Mutex::Autolock lock(mDisplayMutex);
-
-    if (mResChanged && !isFullScreenComposition()) {
-        ALOGD("presentDisplay: drop invalid frame during resolution switch");
-        mNeedSkipPresent = true;
-    } else {
-        mResChanged = false;
-    }
 
     /*
      * buffer handle, dataspace were set by setClientTarget() after validateDisplay
@@ -3381,22 +3342,6 @@ int32_t ExynosDisplay::setActiveConfigWithConstraints(hwc2_config_t config,
     return HWC2_ERROR_NONE;
 }
 
-int32_t ExynosDisplay::setBootDisplayConfig(int32_t config) {
-    return HWC2_ERROR_UNSUPPORTED;
-}
-
-int32_t ExynosDisplay::clearBootDisplayConfig() {
-    return HWC2_ERROR_UNSUPPORTED;
-}
-
-int32_t ExynosDisplay::getPreferredBootDisplayConfig(int32_t *outConfig) {
-    return getPreferredDisplayConfigInternal(outConfig);
-}
-
-int32_t ExynosDisplay::getPreferredDisplayConfigInternal(int32_t *outConfig) {
-    return HWC2_ERROR_UNSUPPORTED;
-}
-
 int32_t ExynosDisplay::setAutoLowLatencyMode(bool __unused on)
 {
     return HWC2_ERROR_UNSUPPORTED;
@@ -3648,12 +3593,6 @@ int32_t ExynosDisplay::validateDisplay(
     mUpdateEventCnt++;
     mLastUpdateTimeStamp = systemTime(SYSTEM_TIME_MONOTONIC);
     int32_t displayRequests = 0;
-
-    if (mResChanged && !isFullScreenComposition()) {
-        ALOGD("validateDisplay: drop invalid frame during resolution switch");
-        return HWC2_ERROR_NONE;
-    }
-    mResChanged = false;
 
     if (mNeedSkipValidatePresent) {
         HDEBUGLOGD(eDebugResourceManager|eDebugSkipResourceAssign,

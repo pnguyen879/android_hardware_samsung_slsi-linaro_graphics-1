@@ -123,28 +123,6 @@ int32_t ExynosDisplayFbInterface::getDisplayAttribute(
     return HWC2_ERROR_NONE;
 }
 
-int32_t ExynosDisplayFbInterface::choosePreferredConfig()
-{
-    uint32_t num_configs = 0;
-    int32_t err = getDisplayConfigs(&num_configs, NULL);
-    if (err != HWC2_ERROR_NONE || !num_configs)
-        return err;
-
-    hwc2_config_t config;
-    int32_t bootConfig;
-    err = mExynosDisplay->getPreferredDisplayConfigInternal(&bootConfig);
-    if (err == HWC2_ERROR_NONE && property_get_bool("sys.boot_completed", false) == true) {
-        config = static_cast<hwc2_config_t>(bootConfig);
-
-        if ((err = setActiveConfig(config)) < 0) {
-            ALOGE("failed to set default config, err %d", err);
-        }
-        ALOGI("Preferred mode id: %d", config);
-    }
-
-    return err;
-}
-
 int32_t ExynosDisplayFbInterface::getDisplayConfigs(
         uint32_t* outNumConfigs,
         hwc2_config_t* outConfigs)
@@ -218,12 +196,6 @@ int32_t ExynosDisplayFbInterface::setActiveConfig(hwc2_config_t config)
                 mExynosDisplay->mVsyncPeriod,
                 mExynosDisplay->mXdpi, mExynosDisplay->mYdpi);
 #endif
-    }
-
-    if (mExynosDisplay->mXres != mExynosDisplay->mDisplayConfigs[mActiveConfig].width ||
-            mExynosDisplay->mYres != mExynosDisplay->mDisplayConfigs[mActiveConfig].height) {
-        mExynosDisplay->mRenderingState = RENDERING_STATE_NONE;
-        mExynosDisplay->mResChanged = true;
     }
 
     mActiveConfig = config;
@@ -899,8 +871,6 @@ void ExynosPrimaryDisplayFbInterface::init(ExynosDisplay *exynosDisplay)
 
     getDisplayHWInfo();
     getDisplayConfigsFromDPU();
-    getActiveConfig(&mActiveConfigBoot);
-    choosePreferredConfig();
 }
 
 int32_t ExynosPrimaryDisplayFbInterface::setPowerMode(int32_t mode)
