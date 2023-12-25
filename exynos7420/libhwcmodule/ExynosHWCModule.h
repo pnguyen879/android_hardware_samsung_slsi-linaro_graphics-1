@@ -56,7 +56,7 @@ const int AVAILABLE_GSC_UNITS[] = { 0, 2, 1, 1, 5, 4 };
 #define MPP_MSC         4
 #define MPP_VPP_G       10
 
-#define MPP_DEFAULT     MPP_VGR
+#define MPP_DEFAULT     MPP_VPP_G
 
 const size_t FIMD_EXT_MPP_IDX = 0;
 const size_t HDMI_EXT_MPP_IDX = 1;
