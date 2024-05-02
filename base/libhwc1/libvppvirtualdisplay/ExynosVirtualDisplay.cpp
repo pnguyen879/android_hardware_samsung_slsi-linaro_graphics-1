@@ -20,7 +20,6 @@ ExynosVirtualDisplay::ExynosVirtualDisplay(struct exynos5_hwc_composer_device_1_
     mDisplayWidth(0),
     mDisplayHeight(0),
     mIsWFDState(false),
-    mIsRotationState(false),
     mPresentationMode(0),
     mDeviceOrientation(0),
     mFrameBufferTargetTransform(0),
@@ -149,9 +148,7 @@ int ExynosVirtualDisplay::prepare(hwc_display_contents_1_t* contents)
         }
     }
 
-    if (mIsRotationState)
-        mCompositionType = COMPOSITION_HWC;
-    else if (mOverlayLayer && (mNumFB > 0))
+    if (mOverlayLayer && (mNumFB > 0))
         mCompositionType = COMPOSITION_MIXED;
     else if (mOverlayLayer)
         mCompositionType = COMPOSITION_HWC;
@@ -385,14 +382,6 @@ int ExynosVirtualDisplay::set(hwc_display_contents_1_t* contents)
         }
 
         if (layer.compositionType == HWC_OVERLAY) {
-            if (mIsRotationState) {
-                if (layer.acquireFenceFd > 0) {
-                    close(layer.acquireFenceFd);
-                    layer.acquireFenceFd = -1;
-                }
-                continue;
-            }
-
             if (!layer.handle)
                 continue;
 
@@ -413,14 +402,6 @@ int ExynosVirtualDisplay::set(hwc_display_contents_1_t* contents)
         }
 
         if (layer.compositionType == HWC_FRAMEBUFFER_TARGET) {
-            if (mIsRotationState) {
-                if (layer.acquireFenceFd > 0) {
-                    close(layer.acquireFenceFd);
-                    layer.acquireFenceFd = -1;
-                }
-                continue;
-            }
-
             if (!layer.handle)
                 continue;
 
@@ -511,17 +492,6 @@ void ExynosVirtualDisplay::determineSkipLayer(hwc_display_contents_1_t *contents
         if (layer.compositionType == HWC_FRAMEBUFFER_TARGET) {
             continue;
         }
-
-        if (mIsRotationState) {
-            // normal layers can be skip layer.
-            if (layer.handle) {
-                private_handle_t *h = private_handle_t::dynamicCast(layer.handle);
-                if (getDrmMode(h->flags) != NO_DRM)
-                    continue;
-            }
-            layer.compositionType = HWC_OVERLAY;
-            layer.flags = HWC_SKIP_RENDERING;
-        }
     }
 }
 
@@ -532,7 +502,6 @@ void ExynosVirtualDisplay::determineYuvOverlay(hwc_display_contents_1_t *content
     mForceOverlayLayerIndex = -1;
     mHasDrmSurface = false;
     mYuvLayers = 0;
-    mIsRotationState = false;
     mIsSecureDRM = false;
     mIsNormalDRM = false;
     bool useVPPOverlayFlag = false;
@@ -545,17 +514,6 @@ void ExynosVirtualDisplay::determineYuvOverlay(hwc_display_contents_1_t *content
     if (!isSupportGLESformat()) {
         ALOGE("determineYuvOverlay, GLES format is not suppoted, no overlay");
         return;
-    }
-
-    /* find rotation animation layer */
-    for (size_t i = 0; i < contents->numHwLayers; i++) {
-        hwc_layer_1_t &layer = contents->hwLayers[i];
-
-        if (layer.flags & HWC_SCREENSHOT_ANIMATOR_LAYER) {
-            ALOGV("include rotation animation layer");
-            mIsRotationState = true;
-            return;
-        }
     }
 
     private_handle_t *outBufHandle = private_handle_t::dynamicCast(contents->outbuf);
@@ -675,9 +633,6 @@ void ExynosVirtualDisplay::determineSupportedOverlays(hwc_display_contents_1_t *
         return;
     }
 
-    if (mIsRotationState)
-        return;
-
     private_handle_t *outBufHandle = private_handle_t::dynamicCast(contents->outbuf);
     if (outBufHandle == NULL) {
         ALOGE("determineSupportedOverlays, outbuf is invalid, no overlay");
@@ -700,9 +655,6 @@ void ExynosVirtualDisplay::determineBandwidthSupport(hwc_display_contents_1_t *c
         ALOGE("determineBandwidthSupport, GLES format is not suppoted, no overlay");
         return;
     }
-
-    if (mIsRotationState)
-        return;
 
     private_handle_t *outBufHandle = private_handle_t::dynamicCast(contents->outbuf);
     if (outBufHandle == NULL) {
@@ -864,9 +816,7 @@ int ExynosVirtualDisplay::getWFDInfo(int32_t* state, int32_t* compositionType, i
 {
     *state = (int32_t)mIsWFDState;
     *compositionType = mCompositionType;
-    if (mIsRotationState)
-        *format = (int32_t)0xFFFFFFFF;
-    else if (mIsSecureDRM)
+    if (mIsSecureDRM)
         *format = (int32_t)HAL_PIXEL_FORMAT_EXYNOS_YCbCr_420_SPN;
     else
         *format = (int32_t)mGLESFormat;

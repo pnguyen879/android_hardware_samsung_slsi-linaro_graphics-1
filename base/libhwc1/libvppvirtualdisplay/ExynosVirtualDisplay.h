@@ -57,7 +57,6 @@ class ExynosVirtualDisplay : public ExynosDisplay {
         unsigned int mDisplayHeight;
 
         bool mIsWFDState;
-        bool mIsRotationState;
 
         bool mPresentationMode;
         unsigned int mDeviceOrientation;

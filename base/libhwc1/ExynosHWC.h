@@ -440,4 +440,8 @@ enum {
     PANEL_LEGACY = 0,
     PANEL_DSC,
 };
+
+enum {
+    EXYNOS_HWC_DIM_LAYER = 0x00000200
+};
 #endif
