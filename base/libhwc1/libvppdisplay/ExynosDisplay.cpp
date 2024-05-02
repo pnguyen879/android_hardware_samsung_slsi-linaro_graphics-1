@@ -671,7 +671,7 @@ void ExynosDisplay::doPreProcessing(hwc_display_contents_1_t* contents)
         if ((layer.backgroundColor.r == 0) && (layer.backgroundColor.g == 0) &&
             (layer.backgroundColor.b == 0) && (layer.backgroundColor.a == 255) &&
             (layer.flags & HWC_SKIP_LAYER) && (layer.compositionType == HWC_FRAMEBUFFER)) {
-            layer.flags |= HWC_DIM_LAYER;
+            layer.flags |= EXYNOS_HWC_DIM_LAYER;
             layer.handle = NULL;
         }
 
@@ -786,7 +786,7 @@ bool ExynosDisplay::handleTotalBandwidthOverload(hwc_display_contents_1_t *conte
                 if (mForceOverlayLayerIndex == 0 && i == 0)
                     break;
                 hwc_layer_1_t &layer = contents->hwLayers[i];
-                isDimLayer = !!(layer.flags & HWC_DIM_LAYER);
+                isDimLayer = !!(layer.flags & EXYNOS_HWC_DIM_LAYER);
                 layer.compositionType = HWC_FRAMEBUFFER;
                 mLayerInfos[i]->compositionType = layer.compositionType;
                 mLayerInfos[i]->mCheckOverlayFlag |= eInsufficientBandwidth;
@@ -1312,17 +1312,11 @@ bool ExynosDisplay::isOverlaySupported(hwc_layer_1_t &layer, size_t index, bool 
 void ExynosDisplay::configureHandle(private_handle_t *handle, size_t index,
         hwc_layer_1_t &layer, int fence_fd, decon_win_config &cfg)
 {
-    int isOpaque = 0;
-    bool isDimLayer = !!(layer.flags & HWC_DIM_LAYER);
+    bool isDimLayer = !!(layer.flags & EXYNOS_HWC_DIM_LAYER);
 
     if ((!isDimLayer) && handle == NULL)
         return;
 
-    if ((layer.flags & HWC_SET_OPAQUE) && handle && (handle->format == HAL_PIXEL_FORMAT_RGBA_8888)
-            && (layer.compositionType == HWC_OVERLAY)) {
-        handle->format = HAL_PIXEL_FORMAT_RGBX_8888;
-        isOpaque = 1;
-    }
     hwc_frect_t &sourceCrop = layer.sourceCropf;
     hwc_rect_t &displayFrame = layer.compositionType == HWC_FRAMEBUFFER_TARGET ? mFbUpdateRegion : layer.displayFrame;
     int32_t blending = layer.blending;
@@ -1400,7 +1394,7 @@ void ExynosDisplay::configureHandle(private_handle_t *handle, size_t index,
     getLayerRegion(layer, cfg.covered_opaque_area, eCoveredOpaqueRegion);
 #endif
 
-    if (layer.flags & HWC_DIM_LAYER) {
+    if (layer.flags & EXYNOS_HWC_DIM_LAYER) {
         cfg.state = cfg.DECON_WIN_STATE_COLOR;
         cfg.color = 0x0;
         if (!(planeAlpha && (planeAlpha < 255)))
@@ -1419,7 +1413,8 @@ void ExynosDisplay::configureHandle(private_handle_t *handle, size_t index,
         if (handle->fd2 >= 0) {
             ExynosVideoMeta *metaData = NULL;
             int interlacedType = -1;
-            metaData = (ExynosVideoMeta*)mmap(0, sizeof(ExynosVideoMeta), PROT_READ|PROT_WRITE, MAP_SHARED, handle->fd2, 0);
+            metaData = (ExynosVideoMeta*)mmap(0, sizeof(metaData->eType),
+                        PROT_READ|PROT_WRITE, MAP_SHARED, handle->fd2, 0);
             if ((metaData) &&
                 (metaData->eType & VIDEO_INFO_TYPE_INTERLACED)) {
                 interlacedType = metaData->data.dec.nInterlacedType;
@@ -1433,7 +1428,7 @@ void ExynosDisplay::configureHandle(private_handle_t *handle, size_t index,
                 cfg.src.f_h = handle->vstride / 2;
             }
             if (metaData)
-                munmap(metaData, 64);
+                munmap(metaData, sizeof(metaData->eType));
         }
     }
 
@@ -1521,11 +1516,6 @@ void ExynosDisplay::configureHandle(private_handle_t *handle, size_t index,
     /* opaque region coordinates is on screen */
     getLayerRegion(layer, cfg.covered_opaque_area, eCoveredOpaqueRegion);
 #endif
-
-    if (isOpaque && (handle->format == HAL_PIXEL_FORMAT_RGBX_8888)) {
-        handle->format = HAL_PIXEL_FORMAT_RGBA_8888;
-        isOpaque = 0;
-    }
 }
 
 void ExynosDisplay::configureOverlay(hwc_layer_1_t *layer, size_t index, decon_win_config &cfg)
@@ -2093,7 +2083,7 @@ int ExynosDisplay::postFrame(hwc_display_contents_1_t* contents)
             DISPLAY_LOGD(eDebugWinConfig, "blending not supported on window 0; forcing BLENDING_NONE");
             config[window_index].blending = DECON_BLENDING_NONE;
         }
-        if (!(layer.flags & HWC_DIM_LAYER) && (window_index < DECON_WIN_UPDATE_IDX) &&
+        if (!(layer.flags & EXYNOS_HWC_DIM_LAYER) && (window_index < DECON_WIN_UPDATE_IDX) &&
                 (config[window_index].state != config[window_index].DECON_WIN_STATE_DISABLED) &&
                 (config[window_index].src.w == 0 || config[window_index].src.h == 0 ||
                  config[window_index].dst.w == 0 || config[window_index].dst.h == 0)) {
@@ -2352,7 +2342,8 @@ void ExynosDisplay::determineYuvOverlay(hwc_display_contents_1_t *contents)
                     mOriginFrect.push(layer.sourceCropf);
 
                     if (handle->fd2 >= 0) {
-                        metaData = (ExynosVideoMeta*)mmap(0, sizeof(ExynosVideoMeta), PROT_READ|PROT_WRITE, MAP_SHARED, handle->fd2, 0);
+                        metaData = (ExynosVideoMeta*)mmap(0, sizeof(metaData->eType),
+                                    PROT_READ|PROT_WRITE, MAP_SHARED, handle->fd2, 0);
                         if ((metaData) &&
                             (metaData->eType & VIDEO_INFO_TYPE_INTERLACED)) {
                             interlacedType = metaData->data.dec.nInterlacedType;
@@ -2374,7 +2365,7 @@ void ExynosDisplay::determineYuvOverlay(hwc_display_contents_1_t *contents)
                     mBackUpFrect.push(layer.sourceCropf);
 
                     if (metaData)
-                        munmap(metaData, 64);
+                        munmap(metaData, sizeof(metaData->eType));
                 }
 
                 if (isOverlaySupported(contents->hwLayers[i], i, useVPPOverlayFlag, &supportedInternalMPP, &supportedExternalMPP)) {
@@ -2489,7 +2480,7 @@ void ExynosDisplay::determineSupportedOverlays(hwc_display_contents_1_t *content
             continue;
         }
 
-        if ((layer.flags & HWC_DIM_LAYER) && !(layer.flags & HWC_SKIP_LAYER)) {
+        if ((layer.flags & EXYNOS_HWC_DIM_LAYER) && !(layer.flags & HWC_SKIP_LAYER)) {
             ExynosMPPModule* supportedInternalMPP = NULL;
             if (isOverlaySupported(contents->hwLayers[i], i, false, &supportedInternalMPP, NULL)) {
                 if (supportedInternalMPP != NULL) {
@@ -2580,7 +2571,7 @@ void ExynosDisplay::determineSupportedOverlays(hwc_display_contents_1_t *content
     hwc_rect_t intersect_rect;
     for (size_t i = 0; i < contents->numHwLayers; i++) {
         hwc_layer_1_t &layer = contents->hwLayers[i];
-        if (!!(layer.flags & HWC_DIM_LAYER))
+        if (!!(layer.flags & EXYNOS_HWC_DIM_LAYER))
             continue;
         if (layer.compositionType == HWC_OVERLAY) {
             if (i == 0) {
@@ -2997,7 +2988,7 @@ void ExynosDisplay::assignWindows(hwc_display_contents_1_t *contents)
                 continue;
             }
             if (layer.compositionType == HWC_OVERLAY) {
-                if (layer.flags & HWC_DIM_LAYER) {
+                if (layer.flags & EXYNOS_HWC_DIM_LAYER) {
                     mLayerInfos[i]->mWindowIndex = nextWindow;
                     nextWindow++;
                     continue;
