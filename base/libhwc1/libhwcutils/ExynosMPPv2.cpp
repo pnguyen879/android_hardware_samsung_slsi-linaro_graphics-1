@@ -112,7 +112,7 @@ ExynosMPP::~ExynosMPP()
     if (mBufferFreeThread != NULL) {
         mBufferFreeThread->mRunning = false;
         mBufferFreeThread->requestExitAndWait();
-        mBufferFreeThread = NULL;
+        delete mBufferFreeThread;
     }
     if (mSMemFd >= 0)
         close(mSMemFd);
@@ -1843,7 +1843,7 @@ void ExynosMPP::setAllocDevice(alloc_device_t* allocDevice)
 {
     mAllocDevice = allocDevice;
     if (mBufferFreeThread == NULL) {
-        mBufferFreeThread = android::sp<BufferFreeThread>::make(this);
+        mBufferFreeThread = new BufferFreeThread(this);
         mBufferFreeThread->mRunning = true;
         mBufferFreeThread->run("MPPThread");
     }
