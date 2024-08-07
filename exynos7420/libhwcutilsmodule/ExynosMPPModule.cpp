@@ -51,32 +51,22 @@ bool ExynosMPPModule::checkRotationCase(hwc_layer_1_t &layer, uint8_t rotType)
 {
     switch(rotType) {
     case eMPPRot1:
-        if ((layer.transform == 0) || (layer.transform == HAL_TRANSFORM_FLIP_H) ||
-            (layer.transform == HAL_TRANSFORM_FLIP_V) || (layer.transform == HAL_TRANSFORM_ROT_180))
-            return true;
-        else
-            return false;
+        return (layer.transform == 0) ||
+               (layer.transform == HAL_TRANSFORM_FLIP_H) ||
+               (layer.transform == HAL_TRANSFORM_FLIP_V) ||
+               (layer.transform == HAL_TRANSFORM_ROT_180);
     case eMPPRot2:
-        if ((layer.transform == HAL_TRANSFORM_ROT_90) || (layer.transform == HAL_TRANSFORM_ROT_90 | HAL_TRANSFORM_FLIP_H) ||
-            (layer.transform == HAL_TRANSFORM_ROT_90 | HAL_TRANSFORM_FLIP_V) || (layer.transform == HAL_TRANSFORM_ROT_270))
-            return true;
-        else
-            return false;
+        return (layer.transform == HAL_TRANSFORM_ROT_90) ||
+               (layer.transform == (HAL_TRANSFORM_ROT_90 | HAL_TRANSFORM_FLIP_H)) ||
+               (layer.transform == (HAL_TRANSFORM_ROT_90 | HAL_TRANSFORM_FLIP_V)) ||
+               (layer.transform == HAL_TRANSFORM_ROT_270);
     case eMPPRot3:
-        if (layer.transform == 0)
-            return true;
-        else
-            return false;
+        return (layer.transform == 0);
     case eMPPRot4:
-        if (layer.transform != 0)
-            return true;
-        else
-            return false;
+        return (layer.transform != 0);
     case eMPPRot5:
-        if ((layer.transform & HAL_TRANSFORM_ROT_90) || (layer.transform & HAL_TRANSFORM_ROT_180))
-            return true;
-        else
-            return false;
+        return (layer.transform & HAL_TRANSFORM_ROT_90) ||
+               (layer.transform & HAL_TRANSFORM_ROT_180);
     default:
         return false;
     }
